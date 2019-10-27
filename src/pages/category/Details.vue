@@ -1,6 +1,6 @@
 <template>
   <div class="categoryDetails">
-    <h2>顾客详情</h2>
+    <h2>栏目详情</h2>
     <el-button size="small" type="text" @click="backHandler">返回</el-button>
     <el-tabs v-model="activeName">
       <el-tab-pane label="基本信息" name="info">
@@ -32,7 +32,7 @@ export default {
   created() {
     console.log(this.$route)
     const id = this.$route.query.id
-    // 通过id查询顾客，订单，地址
+    // 通过id查询栏目，订单，地址
     this.findAddressByCustomerId(id)
   },
   computed: {

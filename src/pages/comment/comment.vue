@@ -1,36 +1,38 @@
 <template>
-  <div class="address">
-		<!-- 按钮 -->
-		<div>
-			<el-button @click="toAddHandler" size="small" type="primary">添加</el-button>
-			<el-button @click="batchDeleteHandler"  size="small" type="danger">批量删除</el-button>
-		</div>
-		<!-- 表格 -->
-		<div v-loading="loading">
-      <el-table :data="addresses" size="mini"  @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55"></el-table-column>
-        <el-table-column prop="id" label="编号"></el-table-column>
-        <el-table-column prop="province" label="省份"></el-table-column>
-        <el-table-column prop="telephone" label="手机号"></el-table-column>
-         <el-table-column prop="city" label="城市"></el-table-column>
-          <el-table-column prop="area" label="地区"></el-table-column>
+  <div class="comment">
+    <!-- 按钮 -->
+    <div>
+      <el-button size="small" type="primary" @click="toAddHandler">添加</el-button>
+      <el-button size="small" type="danger" @click="batchDeleteHandler">批量删除</el-button>
+    </div>
+    <!-- 表格 -->
+    <div v-loading="loading">
+      <el-table :data="comments" size="mini" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="55" />
+        <el-table-column prop="id" label="编号" />
+        <el-table-column prop="content" label="评论内容" />
+        <el-table-column prop="commentTime" label="评论时间" />
+        <el-table-column prop="orderId" label="订单Id" />
         <el-table-column label="操作">
           <template #default="record">
-              <i class="el-icon-delete" href="" @click.prevent="deleteHandler(record.row.id)"></i> &nbsp;
-							<i class="el-icon-edit-outline" href="" @click.prevent="editHandler(record.row)"></i> &nbsp;
-              <a href="" @click.prevent="toDetailsHandler(record.row)">详情</a>
+            <i class="el-icon-delete" href="" @click.prevent="deleteHandler(record.row.id)" /> &nbsp;
+            <i class="el-icon-edit-outline" href="" @click.prevent="editHandler(record.row)" /> &nbsp;
+            <a href="" @click.prevent="toDetailsHandler(record.row)">详情</a>
           </template>
         </el-table-column>
       </el-table>
-		</div>
+    </div>
     <!-- 模态框 -->
     <el-dialog :title="title" :visible.sync="visible" @close="dialogCloseHandler">
-      <el-form :model="address" :rules="rules" ref="addressForm">
-        <el-form-item label="姓名" label-width="100px"  prop="realname">
-          <el-input v-model="address.realname" auto-complete="off"></el-input>
+      <el-form ref="commentForm" :model="comment" :rules="rules">
+        <el-form-item label="评论内容" label-width="100px" prop="content">
+          <el-input v-model="comment.content" auto-complete="off" />
         </el-form-item>
-        <el-form-item label="手机号" label-width="100px" prop="telephone">
-          <el-input v-model="address.telephone" auto-complete="off"></el-input>
+        <el-form-item label="评论时间" label-width="100px" prop="commentTime">
+          <el-input v-model="comment.commentTime" auto-complete="off" />
+        </el-form-item>
+        <el-form-item label="订单Id" label-width="100px" prop="orderId">
+          <el-input v-model="comment.orderId" auto-complete="off" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -42,86 +44,86 @@
   </div>
 </template>
 <script>
-import {mapState,mapGetters,mapMutations,mapActions} from 'vuex'
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 export default {
-  data(){
+  data() {
     return {
-      address:{},
-      ids:[],
-      rules:{
-        realname: [
-          { required: true, message: '请输入姓名', trigger: 'blur' },
+      comment: {},
+      ids: [],
+      rules: {
+        content: [
+          { required: true, message: '请输入评论内容', trigger: 'blur' },
           { min: 2, max: 10, message: '长度在 2 到 10 个字符', trigger: 'blur' }
         ],
-        telephone: [
-          { required: true, message: '请输入手机号', trigger: 'blur' }
+        commentTime: [
+          { required: true, message: '请输入评论时间', trigger: 'blur' }
         ]
       }
     }
   },
-  computed:{
-    ...mapState("address",["addresses","visible","title","loading"]),
-    ...mapGetters("address",["orderAddress","addressSize"])
+  computed: {
+    ...mapState('comment', ['comments', 'visible', 'title', 'loading']),
+    ...mapGetters('comment', ['orderComment', 'commentSize'])
   },
-  created(){
-    this.findAllAddresses();
+  created() {
+    this.findAllComments()
   },
-  methods:{
-    ...mapMutations("address",["showModal","closeModal","setTitle"]),
-    ...mapActions("address",["findAllAddresses","saveOrUpdateAddress","deleteAddressById","batchDeleteAddress"]),
+  methods: {
+    ...mapMutations('comment', ['showModal', 'closeModal', 'setTitle']),
+    ...mapActions('comment', ['findAllComments', 'saveOrUpdateComment', 'deleteCommentById', 'batchDeleteComment']),
     // 普通方法
-    toDetailsHandler(address){
-      //跳转到详情页面
-      // this.$router.push("/addressDetails")
+    toDetailsHandler(comment) {
+      // 跳转到详情页面
+      // this.$router.push("/commentDetails")
       this.$router.push({
-        path:"/address/details",
-        query:{id:address.id}
+        path: '/comment/details',
+        query: { id: comment.id }
       })
     },
     handleSelectionChange(val) {
-      this.ids = val.map(item=>item.id);
+      this.ids = val.map(item => item.id)
     },
-    toAddHandler(){
+    toAddHandler() {
       // 1. 重置表单
-      this.address = {};
-      this.setTitle("添加顾客信息");
+      this.comment = {}
+      this.setTitle('添加评论信息')
       // 2. 显示模态框
-      this.showModal();
+      this.showModal()
     },
-    submitHandler(){
+    submitHandler() {
       // 校验
-      this.$refs.addressForm.validate((valid)=>{
+      this.$refs.commentForm.validate((valid) => {
         // 如果校验通过
-        if(valid){
-          let promise = this.saveOrUpdateAddress(this.address)
-          promise.then((response)=>{
+        if (valid) {
+          const promise = this.saveOrUpdateComment(this.comment)
+          promise.then((response) => {
             // promise为action函数的返回值，异步函数的返回值就是promise的then回调函数的参数
-            this.$message({type:"success",message:response.statusText});
+            this.$message({ type: 'success', message: response.orderIdText })
           })
         } else {
-          return false;
+          return false
         }
       })
     },
-    dialogCloseHandler(){
-      this.$refs.addressForm.resetFields();
+    dialogCloseHandler() {
+      this.$refs.commentForm.resetFields()
     },
-    editHandler(row){
-      this.address = row;
-      this.setTitle("修改顾客信息");
-      this.showModal();
+    editHandler(row) {
+      this.comment = row
+      this.setTitle('修改评论信息')
+      this.showModal()
     },
-    deleteHandler(id){
-      this.deleteAddressById(id)
-      .then((response)=>{
-        this.$message({type:"success",message:response.statusText});
-      })
+    deleteHandler(id) {
+      this.deleteCommentById(id)
+        .then((response) => {
+          this.$message({ type: 'success', message: response.orderIdText })
+        })
     },
-    batchDeleteHandler(){
-      this.batchDeleteAddress(this.ids)
-      .then((response)=>{
-        this.$message({type:"success",message:response.statusText});
-      })
+    batchDeleteHandler() {
+      this.batchDeleteComment(this.ids)
+        .then((response) => {
+          this.$message({ type: 'success', message: response.orderIdText })
+        })
     }
 
   }

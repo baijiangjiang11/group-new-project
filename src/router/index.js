@@ -136,7 +136,7 @@ export const asyncRoutes = [
         path: 'list',
         component: () => import('@/pages/category/Category'),
         name: 'category',
-        meta: { title: '栏目管理', icon: 'tab' }
+        meta: { title: '栏目管理', icon: 'category' }
       },
       {
         path: 'details',
