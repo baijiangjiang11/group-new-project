@@ -121,13 +121,32 @@ export const asyncRoutes = [
       },
       {
         path: 'details',
-        hidden:true,
+        hidden: true,
         component: () => import('@/pages/customer/Details'),
         name: 'details',
         meta: { title: '顾客详情', icon: 'tab' }
       }
     ]
-  } ,
+  },
+  {
+    path: '/category',
+    component: Layout,
+    children: [
+      {
+        path: 'list',
+        component: () => import('@/pages/category/Category'),
+        name: 'category',
+        meta: { title: '栏目管理', icon: 'tab' }
+      },
+      {
+        path: 'details',
+        hidden: true,
+        component: () => import('@/pages/category/Details'),
+        name: 'details',
+        meta: { title: '栏目详情', icon: 'tab' }
+      }
+    ]
+  },
   {
     path: '/address',
     component: Layout,
@@ -187,7 +206,7 @@ export const asyncRoutes = [
   {
     path: '/check',
     component: Layout,
-    meta:{title:"审核管理", icon: 'tab' },
+    meta: { title: '审核管理', icon: 'tab' },
     children: [
       {
         path: 'waiter',
@@ -202,7 +221,7 @@ export const asyncRoutes = [
         meta: { title: '提现审核', icon: 'tab' }
       }
     ]
-  } ,
+  },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]
