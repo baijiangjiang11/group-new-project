@@ -1,74 +1,90 @@
 import request from '@/utils/request'
-import {post,post_array} from '@/utils/request'
+import { post, post_array } from '@/utils/request'
 export default {
-  namespaced:true,
-  state:{
-    addresses:[],
-    visible:false,
-    title:"添加顾客信息"
-  },
-  getters:{
-    addressSize(state){
-      return state.addresses.length;
+  namespaced: true,
+  state: {
+    addresses: {
+      list: []
     },
-    orderAddress:(state)=>{
-      return function(flag){
-        state.addresses.sort((a,b)=>{
-          if(a[flag] > b[flag]){
-            return -1;
+    customers: [],
+    visible: false,
+    title: '添加顾客信息'
+  },
+  getters: {
+    addressSize(state) {
+      return state.addresses.length
+    },
+    orderAddress: (state) => {
+      return function(flag) {
+        state.addresses.sort((a, b) => {
+          if (a[flag] > b[flag]) {
+            return -1
           } else {
-            return 1;
+            return 1
           }
         })
-        return state.addresses;
+        return state.addresses
       }
     }
   },
-  mutations:{
-    showModal(state){
-      state.visible = true;
+  mutations: {
+    refreshAddress(state, addresses) {
+      state.addresses = addresses
     },
-    closeModal(state){
-      state.visible = false;
+    showModal(state) {
+      state.visible = true
     },
-    refreshAddresses(state,addresses){
-      state.addresses = addresses;
+    closeModal(state) {
+      state.visible = false
     },
-    setTitle(state,title){
-      state.title = title;
+    refreshCustomers(state, customers) {
+      state.customers = customers
+    },
+    setTitle(state, title) {
+      state.title = title
+    },
+    pageChangeHandler(state, params, currentPage) {
+      console.log(params.page)
     }
+
   },
-  actions:{
-    async batchDeleteAddress(context,ids){
-      // 1. 批量删除
-      let response = await request.post("/address/batchDelete",{ids})
-      // 2. 分发
-      context.dispatch("findAllAddresses");
-      // 3. 返回结果
-      return response;
-    },
-    async deleteAddressById(context,id){
-      let response = await request.get("/address/deleteById?id="+id);
-      context.dispatch("findAllAddresses");
-      return response;
-    },
-    async findAllAddresses(context){
+  actions: {
+    async findAllCustomers({ dispatch, commit }) {
       // 1. ajax查询
-      let response = await request.get("/address/findAll");
-      console.log(response);
+      const response = await request.get('/customer/findAll')
       // 2. 将查询结果更新到state中
-      context.commit("refreshAddresses",response.data);
+      commit('refreshCustomers', response.data)
     },
-    // payload 顾客信息
-    async saveOrUpdateAddress({commit,dispatch},payload){
-      // 1. 保存或更新
-      let response = await request.post("/address/saveOrUpdate",payload)
-      // 2. 刷新页面
-      dispatch("findAllAddresses");
-      // 3. 关闭模态框
-      commit("closeModal");
-      // 4. 提示
-      return response;
+    // 分页查询数据
+    async findqueryAddress(context, param) {
+      // 1.ajax查询
+      const response = await post('/address/query', param)
+      // 2.将查询结果更新到state中
+      context.commit('refreshAddress', response.data)
+    },
+    // 删除
+    async  deleteAddressHandler(context, id) {
+      const response = await request.get('/address/deleteById?id=' + id)
+      context.dispatch('findqueryAddress')
+      return response
+    },
+    // 保存或更新
+    async saveOrUpdateAddress({ commit, dispatch }, playload) {
+      const response = await post('/address/saveOrUpdate', playload)
+      // 刷新页面
+      dispatch('findqueryAddress')
+      // 关闭模态框
+      commit('closeModal')
+      // 提示
+      return response
+    },
+    // 批量删除
+    async batchDeleteAddress(context, ids) {
+      const response = await post_array('/address/batchDelete', { ids })
+      // 分发
+      context.dispatch('findqueryAddress')
+      // 返回结果
+      return response
     }
   }
 }

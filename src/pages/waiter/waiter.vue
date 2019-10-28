@@ -1,131 +1,176 @@
 <template>
-  <div class="address">
-		<!-- 按钮 -->
-		<div>
-			<el-button @click="toAddHandler" size="small" type="primary">添加</el-button>
-			<el-button @click="batchDeleteHandler"  size="small" type="danger">批量删除</el-button>
-		</div>
-		<!-- 表格 -->
-		<div v-loading="loading">
-      <el-table :data="addresses" size="mini"  @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55"></el-table-column>
-        <el-table-column prop="id" label="编号"></el-table-column>
-        <el-table-column prop="province" label="省份"></el-table-column>
-        <el-table-column prop="telephone" label="手机号"></el-table-column>
-         <el-table-column prop="city" label="城市"></el-table-column>
-          <el-table-column prop="area" label="地区"></el-table-column>
-        <el-table-column label="操作">
-          <template #default="record">
-              <i class="el-icon-delete" href="" @click.prevent="deleteHandler(record.row.id)"></i> &nbsp;
-							<i class="el-icon-edit-outline" href="" @click.prevent="editHandler(record.row)"></i> &nbsp;
-              <a href="" @click.prevent="toDetailsHandler(record.row)">详情</a>
-          </template>
-        </el-table-column>
-      </el-table>
-		</div>
-    <!-- 模态框 -->
+  <div class="waiter">
+    <h2>服务员管理</h2>
+    <!-- 按钮 -->
+    <div class="btns">
+      <el-button type="primary" size="small" @click="toAddHandler">添加</el-button>
+      <el-button type="danger" size="small" @click="batchDeleteHandler">批量删除</el-button>
+    </div>
+    <!-- 表单 -->
     <el-dialog :title="title" :visible.sync="visible" @close="dialogCloseHandler">
-      <el-form :model="address" :rules="rules" ref="addressForm">
-        <el-form-item label="姓名" label-width="100px"  prop="realname">
-          <el-input v-model="address.realname" auto-complete="off"></el-input>
+      <el-form ref="waiterForm" :model="form" :rules="rules">
+        <el-form-item label="姓名" label-width="100px" prop="realname">
+          <el-input v-model="form.realname" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="手机号" label-width="100px" prop="telephone">
-          <el-input v-model="address.telephone" auto-complete="off"></el-input>
+        <el-form-item label="密码" label-width="100px" prop="password">
+          <el-input v-model="form.password" autocomplete="off" />
         </el-form-item>
+        <el-form-item label="状态" label-width="100px" prop="status">
+          <el-input v-model="form.status" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="性别" label-width="100px" prop="gender">
+          <el-radio-group v-model="form.gender">
+            <el-radio label="男">男</el-radio>
+            <el-radio label="女">女</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="电话" label-width="100px" prop="telephone">
+          <el-input v-model="form.telephone" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="注册时间" label-width="100px" prop="registerTime">
+          <el-input v-model="form.registerTime" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="分数" label-width="100px" prop="score">
+          <el-input v-model="form.score" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="订单数量" label-width="100px" prop="orderQuantity">
+          <el-input v-model="form.orderQuantity" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="idCard" label-width="100px" prop="idCard">
+          <el-input v-model="form.idCard" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="idcardPhotoPositive" label-width="100px" prop="idcardPhotoPositive">
+          <el-input v-model="form.idcardPhotoPositive" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="银行卡" label-width="100px" prop="bankCard">
+          <el-input v-model="form.bankCard" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="银行卡照片" label-width="100px" prop="bankCardPhoto">
+          <el-input v-model="form.bankCardPhoto" autocomplete="off" />
+        </el-form-item>
+
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button size="small" @click="closeModal">取 消</el-button>
-        <el-button size="small" type="primary" @click="submitHandler">确 定</el-button>
+        <el-button type="primary" size="small" @click="submitHandler">确 定</el-button>
       </div>
     </el-dialog>
-    <!-- /模态框 -->
+    <!-- 表格 -->
+    <el-table :data="Waiters.list" size="small" @selection-change="idsChangeHandler">
+      <el-table-column type="selection" width="55" />
+      <el-table-column prop="realname" label="姓名" />
+      <el-table-column prop="password" label="密码" />
+      <el-table-column prop="status" label="状态" />
+      <el-table-column prop="gender" label="性别" />
+      <!-- <el-table-column prop="idCard" label="idcard"></el-table-column> -->
+      <el-table-column prop="telephone" label="电话" />
+      <el-table-column label="操作" width="100px" align="center">
+        <template #default="record">
+          <a href="" class="el-icon-delete" @click.prevent="deleteHandler(record.row.id)" /> &nbsp;
+          <a href="" class="el-icon-edit-outline" @click.prevent="editHandler(record.row)" /> &nbsp;
+          <a href="" @click.prevent="toDetailhandler(record.row)">详情</a>
+        </template>
+      </el-table-column>
+    </el-table>
+    <!-- 分页 -->
+    <el-pagination
+      layout="prev, pager, next"
+      :current-page="Waiters.page+1"
+      :page-size="Waiters.pageSize"
+      :total="Waiters.total"
+      @current-change="pagechangeHandler"
+    />
+    <!--/分页 -->
   </div>
 </template>
 <script>
-import {mapState,mapGetters,mapMutations,mapActions} from 'vuex'
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 export default {
-  data(){
+  data() {
     return {
-      address:{},
-      ids:[],
-      rules:{
+      ids: [],
+      form: {
+
+      },
+      gender: '男',
+      rules: {
         realname: [
-          { required: true, message: '请输入姓名', trigger: 'blur' },
-          { min: 2, max: 10, message: '长度在 2 到 10 个字符', trigger: 'blur' }
+          { required: true, message: '请输入服务员名称', trigger: 'blur' },
+          { min: 2, max: 5, message: '长度在 2 到 5个字符', trigger: 'blur' }
         ],
-        telephone: [
-          { required: true, message: '请输入手机号', trigger: 'blur' }
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' }
         ]
       }
     }
   },
-  computed:{
-    ...mapState("address",["addresses","visible","title","loading"]),
-    ...mapGetters("address",["orderAddress","addressSize"])
+  created() {
+    this.findAllWaiters(this.params)
   },
-  created(){
-    this.findAllAddresses();
+  computed: {
+    ...mapState('waiter', ['Waiters', 'visible', 'title', 'params']),
+    ...mapGetters('waiter', ['countWaiters', 'waiterStatusFilter'])
+    // 普通属性
+
   },
-  methods:{
-    ...mapMutations("address",["showModal","closeModal","setTitle"]),
-    ...mapActions("address",["findAllAddresses","saveOrUpdateAddress","deleteAddressById","batchDeleteAddress"]),
+  methods: {
+    ...mapActions('waiter', ['findAllWaiters', 'deletewaiterById', 'saveOrUpdatewaiter', 'batchDeleteWaiters']),
+    ...mapMutations('waiter', ['showModal', 'closeModal', 'setTitle']),
     // 普通方法
-    toDetailsHandler(address){
-      //跳转到详情页面
-      // this.$router.push("/addressDetails")
+    toDetailhandler(waiter) {
       this.$router.push({
-        path:"/address/details",
-        query:{id:address.id}
+        path: '/waiter/Detail',
+        query: { waiter: waiter }
+        // params:{id:1}
       })
     },
-    handleSelectionChange(val) {
-      this.ids = val.map(item=>item.id);
+    batchDeleteHandler() {
+      this.batchDeleteWaiters(this.ids)
+        .then((response) => {
+          this.$message({ type: 'success', message: response.statusText })
+        })
     },
-    toAddHandler(){
-      // 1. 重置表单
-      this.address = {};
-      this.setTitle("添加顾客信息");
-      // 2. 显示模态框
-      this.showModal();
+    idsChangeHandler(val) {
+      this.ids = val.map(item => item.id)
     },
-    submitHandler(){
-      // 校验
-      this.$refs.addressForm.validate((valid)=>{
-        // 如果校验通过
-        if(valid){
-          let promise = this.saveOrUpdateAddress(this.address)
-          promise.then((response)=>{
-            // promise为action函数的返回值，异步函数的返回值就是promise的then回调函数的参数
-            this.$message({type:"success",message:response.statusText});
-          })
+    dialogCloseHandler() {
+      this.$refs.waiterForm.clearValidate()
+    },
+    toAddHandler() {
+      this.form = {}
+      this.setTitle('添加服务员信息')
+      this.showModal()
+    },
+    submitHandler() {
+      // 1.表单验证
+      this.$refs.waiterForm.validate((valid) => {
+        if (valid) {
+          // 2.提交表单
+          this.saveOrUpdatewaiter(this.form)
+            .then((response) => {
+              this.$message({ type: 'success', message: response.statusText })
+            })
         } else {
-          return false;
+          return false
         }
       })
     },
-    dialogCloseHandler(){
-      this.$refs.addressForm.resetFields();
-    },
-    editHandler(row){
-      this.address = row;
-      this.setTitle("修改顾客信息");
-      this.showModal();
-    },
-    deleteHandler(id){
-      this.deleteAddressById(id)
-      .then((response)=>{
-        this.$message({type:"success",message:response.statusText});
+    deleteHandler(id) {
+      const promise = this.deletewaiterById(id)
+      promise.then((response) => {
+        this.$message({ type: 'success', message: response.statusText })
       })
     },
-    batchDeleteHandler(){
-      this.batchDeleteAddress(this.ids)
-      .then((response)=>{
-        this.$message({type:"success",message:response.statusText});
-      })
+    editHandler(row) {
+      this.form = row
+      this.setTitle('修改服务员信息')
+      this.showModal()
+    },
+    pagechangeHandler(currentPage) {
+      this.params.page = currentPage - 1
+      this.findAllWaiters(this.params)
     }
-
   }
-
 }
 </script>
 <style scoped>
