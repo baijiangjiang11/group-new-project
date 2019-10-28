@@ -7,7 +7,7 @@
     </div>
     <!-- 表格 -->
     <div v-loading="loading">
-      <el-table :data="categories" size="mini" @selection-change="handleSelectionChange">
+      <el-table :data="categories.list" size="mini" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column prop="id" label="编号" align="center" />
         <el-table-column prop="name" label="栏目名称" align="center" />
@@ -43,6 +43,16 @@
       </div>
     </el-dialog>
     <!-- /模态框 -->
+    <!-- 分页 -->
+    <el-pagination
+      small
+      layout="prev, pager, next"
+      :current-page="param.page+1"
+      :page-size="param.pageSize"
+      :total="categories.total"
+      @current-change="pageChangeHandler"
+    />
+    <!-- /分页 -->
   </div>
 </template>
 <script>
@@ -52,6 +62,11 @@ export default {
     return {
       category: {},
       ids: [],
+      param: {
+        name: '',
+        page: 0,
+        pageSize: 5
+      },
       rules: {
         name: [
           { required: true, message: '请输入栏目名称', trigger: 'blur' },
@@ -68,11 +83,11 @@ export default {
     ...mapGetters('category', ['orderCategory', 'categorySize'])
   },
   created() {
-    this.findAllCategories()
+    this.findqueryCategory(this.param)
   },
   methods: {
-    ...mapMutations('category', ['showModal', 'closeModal', 'setTitle']),
-    ...mapActions('category', ['findAllCategories', 'saveOrUpdateCategory', 'deleteCategoryById', 'batchDeleteCategory']),
+    ...mapMutations('category', ['pageChangeHandler', 'showModal', 'closeModal', 'setTitle']),
+    ...mapActions('category', ['findqueryCategory', 'findAllCategories', 'saveOrUpdateCategory', 'deleteCategoryById', 'batchDeleteCategory']),
     // 普通方法
     toDetailsHandler(category) {
       // 跳转到详情页面
@@ -126,10 +141,14 @@ export default {
         .then((response) => {
           this.$message({ type: 'success', message: response.parentIdText })
         })
+    },
+    // 分页查询
+    pageChangeHandler(page) {
+      this.param.page = page - 1
+      this.findqueryCategory(this.param)
     }
 
   }
-
 }
 </script>
 <style scoped>

@@ -177,17 +177,17 @@ export const asyncRoutes = [
       }
     ]
   },
-  {
-    path: '/order',
-    component: Layout,
-    redirect: '/order',
-    children: [{
-      path: 'order',
-      name: 'order',
-      component: () => import('@/pages/order/order'),
-      meta: { title: '订单管理', icon: 'order' }
-    }]
-  },
+  // {
+  //   path: '/order',
+  //   component: Layout,
+  //   redirect: '/order',
+  //   children: [{
+  //     path: 'order',
+  //     name: 'order',
+  //     component: () => import('@/pages/order/order'),
+  //     meta: { title: '订单管理', icon: 'order' }
+  //   }]
+  // },
   {
     path: '/product',
     component: Layout,
@@ -211,25 +211,25 @@ export const asyncRoutes = [
       meta: { title: '评论管理', icon: 'comment' }
     }]
   },
-  {
-    path: '/check',
-    component: Layout,
-    meta: { title: '审核管理', icon: 'tab' },
-    children: [
-      {
-        path: 'waiter',
-        component: () => import('@/pages/check/WaiterCheck'),
-        name: 'waiter',
-        meta: { title: '员工审核', icon: 'tab' }
-      },
-      {
-        path: 'withdraw',
-        component: () => import('@/pages/check/WithdrawCheck'),
-        name: 'withdraw',
-        meta: { title: '提现审核', icon: 'tab' }
-      }
-    ]
-  },
+  // {
+  //   path: '/check',
+  //   component: Layout,
+  //   meta: { title: '审核管理', icon: 'tab' },
+  //   children: [
+  //     {
+  //       path: 'waiter',
+  //       component: () => import('@/pages/check/WaiterCheck'),
+  //       name: 'waiter',
+  //       meta: { title: '员工审核', icon: 'tab' }
+  //     },
+  //     {
+  //       path: 'withdraw',
+  //       component: () => import('@/pages/check/WithdrawCheck'),
+  //       name: 'withdraw',
+  //       meta: { title: '提现审核', icon: 'tab' }
+  //     }
+  //   ]
+  // },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]
