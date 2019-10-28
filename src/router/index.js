@@ -161,13 +161,21 @@ export const asyncRoutes = [
   {
     path: '/waiter',
     component: Layout,
-    redirect: '/waiter',
-    children: [{
-      path: 'waiter',
-      name: 'wiater',
-      component: () => import('@/pages/waiter/waiter'),
-      meta: { title: '员工管理', icon: 'waiter' }
-    }]
+    children: [
+      {
+        path: 'waiter',
+        component: () => import('@/pages/waiter/waiter'),
+        name: 'waiter',
+        meta: { title: '员工管理', icon: 'waiter' }
+      },
+      {
+        path: 'detail',
+        hidden: true,
+        component: () => import('@/pages/waiter/detail'),
+        name: 'details',
+        meta: { title: '员工详情', icon: 'waiter' }
+      }
+    ]
   },
   {
     path: '/order',

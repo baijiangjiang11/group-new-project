@@ -1,85 +1,63 @@
 import request from '@/utils/request'
-import {post,post_array} from '@/utils/request'
-
+import { post, post_array } from '@/utils/request'
 export default {
-  namespaced:true,
-  state:{
-    customers:[],
-    visible:false,
-    title:"添加顾客信息",
-    loading:false,
-  },
-  getters:{
-    customerSize(state){
-      return state.customers.length;
+  namespaced: true,
+  state: {
+    customers: {
+      list: []
     },
-    orderCustomer:(state)=>{
-      return function(flag){
-        state.customers.sort((a,b)=>{
-          if(a[flag] > b[flag]){
-            return -1;
-          } else {
-            return 1;
-          }
-        })
-        return state.customers;
-      }
+    visible: false,
+    title: '添加顾客信息'
+  },
+  getters: {
+
+  },
+  mutations: {
+    refreshCustomer(state, customers) {
+      state.customers = customers
+    },
+    showModal(state) {
+      state.visible = true
+    },
+    closeModal(state) {
+      state.visible = false
+    },
+    setTitle(state, title) {
+      state.title = title
     }
+
   },
-  mutations:{
-    showModal(state){
-      state.visible = true;
+  actions: {
+    // 分页查询数据
+    async findqueryCustomer(context, param) {
+      // 1.ajax查询
+      const response = await post('/customer/query', param)
+      // 2.将查询结果更新到state中
+      context.commit('refreshCustomer', response.data)
     },
-    closeModal(state){
-      state.visible = false;
+    // 删除
+    async  deleteCustomerHandler(context, id) {
+      const response = await request.get('/customer/deleteById?id=' + id)
+      context.dispatch('findqueryCustomer')
+      return response
     },
-    refreshCustomers(state,customers){
-      state.customers = customers;
+    // 保存或更新
+    async saveOrUpdateCustomer({ commit, dispatch }, playload) {
+      const response = await post('/customer/saveOrUpdate', playload)
+      // 刷新页面
+      dispatch('findqueryCustomer')
+      // 关闭模态框
+      commit('closeModal')
+      // 提示
+      return response
     },
-    setTitle(state,title){
-      state.title = title;
-    },
-    beginLoading(state){
-      state.loading = true;
-    },
-    endLoading(state){
-      state.loading = false;
-    }
-  },
-  actions:{
-    async batchDeleteCustomer(context,ids){
-      // 1. 批量删除
-      let response = await post_array("/customer/batchDelete",{ids})
-      // 2. 分发
-      context.dispatch("findAllCustomers");
-      // 3. 返回结果
-      return response;
-    },
-    async deleteCustomerById(context,id){
-      let response = await request.get("/customer/deleteById?id="+id);
-      context.dispatch("findAllCustomers");
-      return response;
-    },
-    async findAllCustomers({dispatch,commit}){
-      // 1. ajax查询
-      commit("beginLoading");
-      let response = await request.get("/customer/findAll");
-      // 2. 将查询结果更新到state中
-      commit("refreshCustomers",response.data);
-      setTimeout(()=>{
-        commit("endLoading")
-      },1000)
-    },
-    // payload 顾客信息
-    async saveOrUpdateCustomer({commit,dispatch},payload){
-      // 1. 保存或更新
-      let response = await post("/customer/saveOrUpdate",payload)
-      // 2. 刷新页面
-      dispatch("findAllCustomers");
-      // 3. 关闭模态框
-      commit("closeModal");
-      // 4. 提示
-      return response;
+    // 批量删除
+    async batchDeleteCustomer(context, ids) {
+      const response = await post_array('/customer/batchDelete', { ids })
+      // 分发
+      context.dispatch('findqueryCustomer')
+      // 返回结果
+      return response
     }
   }
 }
