@@ -1,133 +1,143 @@
 <template>
   <div class="comment">
-    <!-- 按钮 -->
-    <div>
-      <el-button size="small" type="primary" @click="toAddHandler">添加</el-button>
-      <el-button size="small" type="danger" @click="batchDeleteHandler">批量删除</el-button>
+    <h2>评论管理</h2>
+    <div class="btns">
+      <el-row>
+        <!-- 左侧搜索 -->
+        <!-- <el-col :span="21">
+					<el-form :inline="true">
+						<el-form-item>
+							<el-input v-model="params.name" placeholder="请输入关键字"></el-input>
+						</el-form-item>
+						<el-form-item>
+							<el-button @click="initData">搜索</el-button>
+						</el-form-item>
+					</el-form>
+				</el-col> -->
+        <!-- /左侧搜索 -->
+        <!-- 右侧按钮 -->
+        <el-col :span="15">
+          <el-button type="primary" size="mini" @click.prevent="openModel">添加</el-button>
+          <el-button type="danger" size="mini" @click.prevent="batchdeleteHandler">批量删除</el-button>
+        </el-col>
+        <!-- /右侧按钮 -->
+      </el-row>
     </div>
-    <!-- 表格 -->
-    <div v-loading="loading">
-      <el-table :data="comments" size="mini" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" />
-        <el-table-column prop="id" label="编号" />
-        <el-table-column prop="content" label="评论内容" />
-        <el-table-column prop="commentTime" label="评论时间" />
-        <el-table-column prop="orderId" label="订单Id" />
-        <el-table-column label="操作">
-          <template #default="record">
-            <i class="el-icon-delete" href="" @click.prevent="deleteHandler(record.row.id)" /> &nbsp;
-            <i class="el-icon-edit-outline" href="" @click.prevent="editHandler(record.row)" /> &nbsp;
-            <a href="" @click.prevent="toDetailsHandler(record.row)">详情</a>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
+    <el-table :data="comments" @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" />
+      <el-table-column prop="id" label="编号" />
+      <el-table-column prop="content" label="评论内容" />
+      <el-table-column prop="commentTime" label="评论时间" />
+      <el-table-column prop="orderId" label="订单号" />
+      <el-table-column label="操作">
+        <template v-slot:default="a">
+          <el-button size="mini" @click.prevent="editHandler(a.row)">修改</el-button>
+          <el-button size="mini" type="danger" @click.prevent="deleteHandler(a.row.id)">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
     <!-- 模态框 -->
-    <el-dialog :title="title" :visible.sync="visible" @close="dialogCloseHandler">
-      <el-form ref="commentForm" :model="comment" :rules="rules">
-        <el-form-item label="评论内容" label-width="100px" prop="content">
-          <el-input v-model="comment.content" auto-complete="off" />
+    <el-dialog :title="title" :visible.sync="motaikuang" @close="guanbinmtk">
+      <el-form ref="commentForm" :model="form" :rules="rules">
+        <el-form-item label="评论内容" label-width="100px" prop="realname">
+          <el-input v-model="form.content" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="评论时间" label-width="100px" prop="commentTime">
-          <el-input v-model="comment.commentTime" auto-complete="off" />
+        <el-form-item label="评论时间" label-width="100px" prop="telephone">
+          <el-input v-model="form.commentTime" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="订单Id" label-width="100px" prop="orderId">
-          <el-input v-model="comment.orderId" auto-complete="off" />
+        <el-form-item label="订单号" label-width="100px">
+          <el-select v-model="form.orderId" placeholder="请选择订单号">
+            <el-option v-for="item in orders" :key="item" :label="item.id" :value="item.id" />
+          </el-select>
         </el-form-item>
+        <!-- <el-form-item label="订单号" label-width="100px" prop="password">
+		      <el-input v-model="form.password" autocomplete="off"></el-input>
+		    </el-form-item> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button size="small" @click="closeModal">取 消</el-button>
-        <el-button size="small" type="primary" @click="submitHandler">确 定</el-button>
+        <el-button @click.prevent="closeModel">取 消</el-button>
+        <el-button type="primary" @click.prevent="submitHandler">确 定</el-button>
       </div>
     </el-dialog>
     <!-- /模态框 -->
   </div>
 </template>
 <script>
-import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
+import { mapState, mapActions, mapGetters, mapMutations } from 'vuex'
 export default {
   data() {
     return {
-      comment: {},
       ids: [],
+      form: {},
+      ruleForm: {
+        content: ''
+      },
       rules: {
         content: [
           { required: true, message: '请输入评论内容', trigger: 'blur' },
-          { min: 2, max: 10, message: '长度在 2 到 10 个字符', trigger: 'blur' }
-        ],
-        commentTime: [
-          { required: true, message: '请输入评论时间', trigger: 'blur' }
+            		{ min: 2, message: '长度至少为 2 个字符', trigger: 'blur' }
         ]
       }
     }
   },
   computed: {
-    ...mapState('comment', ['comments', 'visible', 'title', 'loading']),
-    ...mapGetters('comment', ['orderComment', 'commentSize'])
-  },
-  created() {
-    this.findAllComments()
+    ...mapState('comment', ['motaikuang', 'comments', 'title', 'orders']),
+    ...mapGetters('comment', ['countcomments', 'commentstatusFilter'])
   },
   methods: {
-    ...mapMutations('comment', ['showModal', 'closeModal', 'setTitle']),
-    ...mapActions('comment', ['findAllComments', 'saveOrUpdateComment', 'deleteCommentById', 'batchDeleteComment']),
-    // 普通方法
-    toDetailsHandler(comment) {
-      // 跳转到详情页面
-      // this.$router.push("/commentDetails")
-      this.$router.push({
-        path: '/comment/details',
-        query: { id: comment.id }
-      })
+    ...mapActions('comment', ['findAllcomments', 'findAllorders', 'deletecomments', 'saveOrUpdatecomments', 'batchdeletecomments']),
+    ...mapMutations('comment', ['openModel', 'closeModel', 'setTitle']),
+    guanbinmtk() {
+      this.$refs.commentForm.clearValidate()
     },
     handleSelectionChange(val) {
       this.ids = val.map(item => item.id)
     },
-    toAddHandler() {
-      // 1. 重置表单
-      this.comment = {}
-      this.setTitle('添加评论信息')
-      // 2. 显示模态框
-      this.showModal()
+    batchdeleteHandler() {
+      this.batchdeletecomments(this.ids)
+        .then((response) => {
+          this.$message({
+            type: 'success',
+            message: response.statusText
+          })
+        })
     },
     submitHandler() {
-      // 校验
       this.$refs.commentForm.validate((valid) => {
-        // 如果校验通过
         if (valid) {
-          const promise = this.saveOrUpdateComment(this.comment)
-          promise.then((response) => {
-            // promise为action函数的返回值，异步函数的返回值就是promise的then回调函数的参数
-            this.$message({ type: 'success', message: response.orderIdText })
-          })
+          this.saveOrUpdatecomments(this.form)
+            .then((response) => {
+              this.$message({
+                type: 'success',
+                message: response.statusText
+              })
+            })
         } else {
           return false
         }
+        this.findAllcomments()
+        this.form = {}
       })
     },
-    dialogCloseHandler() {
-      this.$refs.commentForm.resetFields()
-    },
     editHandler(row) {
-      this.comment = row
+      this.form = row
+      this.openModel()
       this.setTitle('修改评论信息')
-      this.showModal()
     },
     deleteHandler(id) {
-      this.deleteCommentById(id)
-        .then((response) => {
-          this.$message({ type: 'success', message: response.orderIdText })
+      const promise = this.deletecomments(id)
+      promise.then((response) => {
+        this.$message({
+          type: 'success',
+          message: response.statusText
         })
-    },
-    batchDeleteHandler() {
-      this.batchDeleteComment(this.ids)
-        .then((response) => {
-          this.$message({ type: 'success', message: response.orderIdText })
-        })
+      })
     }
-
+  },
+  created() {
+    this.findAllcomments()
+    this.findAllorders()
   }
-
 }
 </script>
 <style scoped>
