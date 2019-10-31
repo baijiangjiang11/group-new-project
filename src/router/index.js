@@ -192,12 +192,21 @@ export const asyncRoutes = [
     path: '/product',
     component: Layout,
     redirect: '/product',
-    children: [{
-      path: 'product',
-      name: 'product',
-      component: () => import('@/pages/product/product'),
-      meta: { title: '产品管理', icon: 'product' }
-    }]
+    children: [
+      {
+        path: 'product',
+        name: 'product',
+        component: () => import('@/pages/product/Product'),
+        meta: { title: '产品管理', icon: 'product' }
+      },
+      {
+        path: 'details',
+        hidden: true,
+        component: () => import('@/pages/product/Details'),
+        name: 'details',
+        meta: { title: '产品详情', icon: 'tab' }
+      }
+    ]
   },
 
   {
